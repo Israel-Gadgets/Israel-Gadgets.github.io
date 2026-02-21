@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Location – Israel Gadgets Mbarara</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* ===== GLOBAL STYLES (matching main site) ===== */
+        :root {
+            --brand-red: #e41e2b;
+            --brand-blue: #1a5fb4;
+            --brand-yellow: #f5a524;
+            --brand-white: #ffffff;
+            --brand-black: #000000;
+            --success: #26a269;
+            --danger: #c01c28;
+            --warning: #f5a524;
+            --dark: #241f31;
+            --sale: #c64600;
+            --electric: #9141ac;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #111;
+            line-height: 1.6;
+            padding-bottom: 70px; /* space for bottom nav */
+        }
+
+        /* Header */
+        .location-header {
+            background: linear-gradient(45deg, var(--brand-red), #d01522);
+            padding: 10px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .shop-logo {
+            height: 50px;
+            width: auto;
+            border-radius: 20px;
+        }
+        .store-name {
+            color: var(--brand-white);
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .back-home {
+            background: var(--brand-white);
+            color: var(--brand-red);
+            padding: 6px 12px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            border: 2px solid var(--brand-yellow);
+            transition: all 0.3s;
+        }
+        .back-home:hover {
+            background: var(--brand-yellow);
+            color: var(--brand-black);
+            transform: translateY(-2px);
+        }
+
+        /* Main container */
+        .location-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 60px;
+            color: var(--brand-blue);
+        }
+        .loading i {
+            font-size: 48px;
+            color: var(--brand-red);
+            margin-bottom: 15px;
+        }
+
+        /* Page title */
+        .page-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--brand-red);
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .page-title i {
+            color: var(--brand-yellow);
+        }
+
+        /* Map section */
+        .map-section {
+            background: var(--brand-white);
+            border-radius: 12px;
+            padding: 20px;
+            border: 3px solid var(--brand-blue);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .map-container {
+            width: 100%;
+            height: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--brand-red);
+        }
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* Info cards grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .info-card {
+            background: var(--brand-white);
+            border-radius: 12px;
+            padding: 20px;
+            border: 3px solid var(--brand-blue);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .info-card h2 {
+            color: var(--brand-red);
+            margin-bottom: 20px;
+            font-size: 22px;
+            border-bottom: 2px solid var(--brand-blue);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-card h2 i {
+            color: var(--brand-yellow);
+        }
+
+        /* Address details */
+        .address-detail {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+        .address-detail i {
+            font-size: 24px;
+            color: var(--brand-red);
+            min-width: 30px;
+            text-align: center;
+        }
+        .address-detail p {
+            margin: 0;
+            font-size: 16px;
+        }
+        .address-detail strong {
+            color: var(--brand-blue);
+        }
+
+        /* Contact items */
+        .contact-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .contact-item i {
+            font-size: 24px;
+            color: var(--brand-red);
+            min-width: 30px;
+            text-align: center;
+        }
+        .contact-item a {
+            color: var(--brand-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .contact-item a:hover {
+            color: var(--brand-red);
+            text-decoration: underline;
+        }
+
+        /* Business hours */
+        .hours-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px dashed #ccc;
+        }
+        .hours-row .days {
+            font-weight: bold;
+            color: var(--brand-blue);
+        }
+        .hours-row .time {
+            color: #333;
+        }
+
+        /* Location buttons */
+        .location-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .location-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--brand-white);
+            border: 2px solid var(--brand-blue);
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--brand-blue);
+            font-weight: 600;
+            transition: all 0.3s;
+            min-width: 180px;
+            justify-content: center;
+        }
+        .location-btn:hover {
+            background: linear-gradient(45deg, var(--brand-red), var(--brand-blue));
+            color: var(--brand-white);
+            transform: translateY(-2px);
+            border-color: var(--brand-red);
+        }
+        .location-btn i {
+            font-size: 20px;
+        }
+
+        /* Coordinates */
+        .coordinates {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(45deg, rgba(228,30,43,0.1), rgba(26,95,180,0.1));
+            border-radius: 8px;
+            border-left: 4px solid var(--brand-yellow);
+            font-size: 16px;
+        }
+        .coordinates i {
+            color: var(--brand-red);
+            margin-right: 8px;
+        }
+        .coordinates code {
+            background: var(--brand-white);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--brand-blue);
+            border: 1px solid var(--brand-blue);
+        }
+        .copy-coord-btn {
+            background: none;
+            border: none;
+            color: var(--brand-blue);
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 16px;
+        }
+        .copy-coord-btn:hover {
+            color: var(--brand-red);
+        }
+
+        /* Delivery info */
+        .delivery-info {
+            background: linear-gradient(45deg, rgba(228,30,43,0.05), rgba(26,95,180,0.05));
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid var(--brand-blue);
+            margin-top: 30px;
+        }
+        .delivery-info h3 {
+            color: var(--brand-red);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .delivery-info ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .delivery-info li {
+            background: var(--brand-white);
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 2px solid var(--brand-blue);
+            font-weight: 500;
+        }
+        .delivery-info li i {
+            color: var(--brand-red);
+            margin-right: 8px;
+        }
+
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 42px;
+            background: var(--brand-white);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            border-top: 3px solid var(--brand-red);
+            z-index: 1000;
+            padding: 0 5px;
+            box-sizing: border-box;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--brand-blue);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 5px 0;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+        .nav-item i {
+            font-size: 17px;
+            margin-bottom: 2px;
+            color: var(--brand-red);
+        }
+        .nav-item span {
+            font-weight: 500;
+        }
+        .nav-item:hover {
+            background: rgba(228,30,43,0.1);
+            transform: translateY(-2px);
+        }
+        .nav-item.active {
+            background: rgba(228,30,43,0.2);
+            color: var(--brand-red);
+        }
+        .nav-item.active i {
+            color: var(--brand-red);
+        }
+
+        /* Toast message */
+        .toast-message {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--success);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 2000;
+            border: 2px solid var(--brand-yellow);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            animation: fadeInOut 2s ease-in-out;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .map-container {
+                height: 300px;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .location-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .location-btn {
+                width: 100%;
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="location-header">
+    <div class="header-inner">
+        <div class="logo-area">
+            <img src="https://i.supaimg.com/c60dbe6d-a5fc-4af2-8f02-c357aab69161.jpg" alt="Israel Gadgets" class="shop-logo">
+            <span class="store-name">Israel Gadgets Mbarara</span>
+        </div>
+        <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> Back to Store</a>
+    </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="location-container">
+    <!-- Loading indicator -->
+    <div id="loading" class="loading">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <p>Loading location details...</p>
+    </div>
+
+    <!-- Content (hidden initially) -->
+    <div id="locationContent" style="display: none;">
+        <h1 class="page-title">
+            <i class="fas fa-map-marker-alt"></i> Visit Our Shop <i class="fas fa-map-marker-alt"></i>
+        </h1>
+
+        <!-- Map Section -->
+        <div class="map-section">
+            <div class="map-container">
+                <iframe 
+                    id="mapIframe"
+                    src="about:blank"
+                    allowfullscreen="" 
+                    loading="lazy">
+                </iframe>
+            </div>
+        </div>
+
+        <!-- Info Grid: Address, Contact, Hours -->
+        <div class="info-grid">
+            <!-- Address Card -->
+            <div class="info-card">
+                <h2><i class="fas fa-store"></i> Address</h2>
+                <div class="address-detail">
+                    <i class="fas fa-map-pin"></i>
+                    <div>
+                        <p id="locationAddress">GBK Plaza, along Ntare Road, opposite Stanbic Bank, Shop No. G05, Mbarara, Uganda</p>
+                    </div>
+                </div>
+                <div class="address-detail">
+                    <i class="fas fa-globe"></i>
+                    <div>
+                        <p><strong>Coordinates:</strong><br><span id="coordDisplay">-0.607411, 30.660626</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Card (quick contacts) -->
+            <div class="info-card">
+                <h2><i class="fas fa-phone-alt"></i> Quick Contact</h2>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <div>
+                        <strong>MTN:</strong> <a href="tel:+256786544501" id="phoneMtn">+256 786 544 501</a><br>
+                        <strong>Airtel:</strong> <a href="tel:+256755712526" id="phoneAirtel">+256 755 712 526</a>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fab fa-whatsapp"></i>
+                    <div>
+                        <a href="https://wa.me/256755712526" target="_blank" id="wa1">+256 755 712 526</a><br>
+                        <a href="https://wa.me/256786544501" target="_blank" id="wa2">+256 786 544 501</a>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <a href="mailto:israelgadgetsmbarara@mail.com" id="contactEmail">israelgadgetsmbarara@mail.com</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Hours Card (from settings) -->
+            <div class="info-card">
+                <h2><i class="fas fa-clock"></i> Business Hours</h2>
+                <div id="businessHours">
+                    <!-- Will be filled by JS -->
+                    <div class="hours-row"><span class="days">Monday - Saturday</span><span class="time">8:00 AM – 7:00 PM</span></div>
+                    <div class="hours-row"><span class="days">Sunday</span><span class="time">10:00 AM – 5:00 PM</span></div>
+                    <div class="hours-row"><span class="days">Public Holidays</span><span class="time">10:00 AM – 4:00 PM</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Navigation Buttons (Google Maps, Apple Maps, Waze) -->
+        <div class="location-buttons">
+            <a href="#" target="_blank" id="googleMapsLink" class="location-btn">
+                <i class="fab fa-google"></i> Google Maps
+            </a>
+            <a href="#" target="_blank" id="appleMapsLink" class="location-btn">
+                <i class="fab fa-apple"></i> Apple Maps
+            </a>
+            <a href="#" target="_blank" id="wazeLink" class="location-btn">
+                <i class="fab fa-waze"></i> Waze
+            </a>
+        </div>
+
+        <!-- Coordinates (copy-friendly) -->
+        <div class="coordinates">
+            <i class="fas fa-location-dot"></i> 
+            <span>Exact coordinates: </span>
+            <code id="coordCode">-0.607411, 30.660626</code>
+            <button class="copy-coord-btn" onclick="copyCoordinates()" title="Copy to clipboard">
+                <i class="fas fa-copy"></i>
+            </button>
+        </div>
+
+        <!-- Delivery Information -->
+        <div class="delivery-info">
+            <h3><i class="fas fa-truck"></i> Delivery Areas</h3>
+            <p>We offer fast and reliable delivery to the following areas:</p>
+            <ul id="deliveryAreasList">
+                <!-- Will be filled by JS -->
+                <li><i class="fas fa-check-circle" style="color: var(--success);"></i> Mbarara</li>
+                <li><i class="fas fa-check-circle" style="color: var(--success);"></i> Ishaka</li>
+                <li><i class="fas fa-check-circle" style="color: var(--success);"></i> Bushenyi</li>
+            </ul>
+            <p style="margin-top: 10px; font-size: 14px; color: #666;" id="deliveryNote">
+                Delivery fee UGX 5,000 for orders below UGX 200,000.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== BOTTOM NAVIGATION ===== -->
+<div class="bottom-nav">
+    <a href="index.html" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="account.html" class="nav-item">
+        <i class="fas fa-user"></i>
+        <span>Account</span>
+    </a>
+    <a href="bundle-deals.html" class="nav-item">
+        <i class="fas fa-gift"></i>
+        <span>Bundle Deals</span>
+    </a>
+    <a href="location.html" class="nav-item active">
+        <i class="fas fa-map-marker-alt"></i>
+        <span>Location</span>
+    </a>
+    <a href="contact.html" class="nav-item">
+        <i class="fas fa-phone-alt"></i>
+        <span>Contact</span>
+    </a>
+</div>
+
+<script>
+    // ===== SUPABASE INIT (renamed to avoid conflict) =====
+    const SUPABASE_URL = 'https://xljtstvujqhlkqpcbtvm.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsanRzdHZ1anFobGtxcGNidHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDkwNDMsImV4cCI6MjA4NjU4NTA0M30.EIOVRbym8pOa7zNFp_wyqqfSF5_H0OZxit8nFRsJRBY';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ===== LOAD LOCATION SETTINGS =====
+    async function loadLocationSettings() {
+        const { data: settings, error } = await supabaseClient
+            .from('settings')
+            .select('key, value');
+
+        if (error) {
+            console.error('Error fetching settings:', error);
+            hideLoaderAndShowContent();
+            return;
+        }
+
+        const getVal = (key, defaultVal) => {
+            const found = settings?.find(s => s.key === key);
+            return found ? found.value : defaultVal;
+        };
+
+        // Address
+        const address = getVal('location_address', 'GBK Plaza, along Ntare Road, opposite Stanbic Bank, Shop No. G05, Mbarara, Uganda');
+        document.getElementById('locationAddress').innerText = address;
+
+        // Coordinates
+        const coords = getVal('location_coordinates', '-0.607411, 30.660626');
+        document.getElementById('coordDisplay').innerText = coords;
+        document.getElementById('coordCode').innerText = coords;
+
+        // Parse coordinates for map and links
+        const [lat, lng] = coords.split(',').map(c => parseFloat(c.trim()));
+        if (!isNaN(lat) && !isNaN(lng)) {
+            // Update map iframe
+            const mapIframe = document.getElementById('mapIframe');
+                document.getElementById('mapIframe').src = `https://maps.google.com/maps?q=${lat},${lng}&output=embed`;
+
+            // Update navigation links
+            document.getElementById('googleMapsLink').href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            document.getElementById('appleMapsLink').href = `https://maps.apple.com/?q=${lat},${lng}`;
+            document.getElementById('wazeLink').href = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+        }
+
+        // Phone numbers (from contact settings or fallback)
+        const phoneMtn = getVal('contact_phone_mtn', '+256 786 544 501');
+        const phoneAirtel = getVal('contact_phone_airtel', '+256 755 712 526');
+        document.getElementById('phoneMtn').innerText = phoneMtn;
+        document.getElementById('phoneMtn').href = 'tel:' + phoneMtn.replace(/\s/g, '');
+        document.getElementById('phoneAirtel').innerText = phoneAirtel;
+        document.getElementById('phoneAirtel').href = 'tel:' + phoneAirtel.replace(/\s/g, '');
+        document.getElementById('wa1').href = 'https://wa.me/' + phoneAirtel.replace(/\s/g, '');
+        document.getElementById('wa2').href = 'https://wa.me/' + phoneMtn.replace(/\s/g, '');
+
+        // Email
+        const email = getVal('contact_email', 'israelgadgetsmbarara@mail.com');
+        document.getElementById('contactEmail').innerText = email;
+        document.getElementById('contactEmail').href = 'mailto:' + email;
+
+        // Business hours
+        const hours = getVal('business_hours', [
+            { days: 'Monday - Saturday', hours: '8:00 AM – 7:00 PM' },
+            { days: 'Sunday', hours: '10:00 AM – 5:00 PM' },
+            { days: 'Public Holidays', hours: '10:00 AM – 4:00 PM' }
+        ]);
+        let hoursHtml = '';
+        hours.forEach(h => {
+            hoursHtml += `<div class="hours-row"><span class="days">${h.days}</span><span class="time">${h.hours}</span></div>`;
+        });
+        document.getElementById('businessHours').innerHTML = hoursHtml;
+
+        // Delivery areas
+        const areas = getVal('delivery_areas', [
+            { area: 'Mbarara', fee: 0, free_threshold: 200000 },
+            { area: 'Ishaka', fee: 0, free_threshold: 200000 },
+            { area: 'Bushenyi', fee: 0, free_threshold: 200000 }
+        ]);
+        let areasHtml = '';
+        areas.forEach(a => {
+            areasHtml += `<li><i class="fas fa-check-circle" style="color: var(--success);"></i> ${a.area} (Free for orders over UGX ${a.free_threshold.toLocaleString()})</li>`;
+        });
+        document.getElementById('deliveryAreasList').innerHTML = areasHtml;
+
+        // Delivery fee and threshold
+        const feeBelow = getVal('delivery_fee_below', 5000);
+        const threshold = getVal('free_delivery_threshold', 200000);
+        document.getElementById('deliveryNote').innerHTML = `Delivery fee UGX ${feeBelow.toLocaleString()} for orders below UGX ${threshold.toLocaleString()}.`;
+
+        hideLoaderAndShowContent();
+    }
+
+    function hideLoaderAndShowContent() {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('locationContent').style.display = 'block';
+    }
+
+    // ===== COPY COORDINATES =====
+    window.copyCoordinates = function() {
+        const coords = document.getElementById('coordCode').innerText;
+        navigator.clipboard.writeText(coords).then(() => {
+            showToast('Coordinates copied!');
+        }).catch(() => {
+            alert('Could not copy coordinates');
+        });
+    };
+
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 2000);
+    }
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', loadLocationSettings);
+</script>
+</body>
+</html>

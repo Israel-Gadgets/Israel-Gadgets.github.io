@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us – Israel Gadgets Mbarara</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* ===== GLOBAL STYLES (matching main site) ===== */
+        :root {
+            --brand-red: #e41e2b;
+            --brand-blue: #1a5fb4;
+            --brand-yellow: #f5a524;
+            --brand-white: #ffffff;
+            --brand-black: #000000;
+            --success: #26a269;
+            --danger: #c01c28;
+            --warning: #f5a524;
+            --dark: #241f31;
+            --sale: #c64600;
+            --electric: #9141ac;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #111;
+            line-height: 1.6;
+            padding-bottom: 70px; /* space for bottom nav */
+        }
+
+        /* Header */
+        .contact-header {
+            background: linear-gradient(45deg, var(--brand-red), #d01522);
+            padding: 10px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .shop-logo {
+            height: 50px;
+            width: auto;
+            border-radius: 20px;
+        }
+        .store-name {
+            color: var(--brand-white);
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .back-home {
+            background: var(--brand-white);
+            color: var(--brand-red);
+            padding: 6px 12px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            border: 2px solid var(--brand-yellow);
+            transition: all 0.3s;
+        }
+        .back-home:hover {
+            background: var(--brand-yellow);
+            color: var(--brand-black);
+            transform: translateY(-2px);
+        }
+
+        /* Main container */
+        .contact-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 60px;
+            color: var(--brand-blue);
+        }
+        .loading i {
+            font-size: 48px;
+            color: var(--brand-red);
+            margin-bottom: 15px;
+        }
+
+        /* Page title */
+        .page-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--brand-red);
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .page-title i {
+            color: var(--brand-yellow);
+        }
+
+        /* Two column layout */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        @media (max-width: 768px) {
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Contact info cards */
+        .info-card {
+            background: var(--brand-white);
+            border-radius: 12px;
+            padding: 25px;
+            border: 3px solid var(--brand-blue);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        .info-card h2 {
+            color: var(--brand-red);
+            margin-bottom: 20px;
+            font-size: 22px;
+            border-bottom: 2px solid var(--brand-blue);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-card h2 i {
+            color: var(--brand-yellow);
+        }
+
+        /* Contact items */
+        .contact-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+        .contact-item i {
+            font-size: 24px;
+            color: var(--brand-red);
+            min-width: 30px;
+            text-align: center;
+        }
+        .contact-item a {
+            color: var(--brand-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .contact-item a:hover {
+            color: var(--brand-red);
+            text-decoration: underline;
+        }
+        .contact-item .label {
+            font-weight: bold;
+            color: var(--brand-blue);
+            display: block;
+        }
+
+        /* Copy button */
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--brand-blue);
+            border-radius: 20px;
+            padding: 2px 10px;
+            margin-left: 10px;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--brand-blue);
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: var(--brand-blue);
+            color: white;
+        }
+
+        /* Social media icons */
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(45deg, var(--brand-red), var(--brand-blue));
+            color: white;
+            border-radius: 50%;
+            font-size: 20px;
+            transition: all 0.3s;
+            border: 2px solid var(--brand-yellow);
+        }
+        .social-links a:hover {
+            transform: translateY(-5px);
+            background: linear-gradient(45deg, var(--brand-blue), var(--brand-red));
+        }
+
+        /* Contact form */
+        .contact-form {
+            background: var(--brand-white);
+            border-radius: 12px;
+            padding: 25px;
+            border: 3px solid var(--brand-blue);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--brand-blue);
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--brand-blue);
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--brand-red);
+            box-shadow: 0 0 0 3px rgba(228,30,43,0.1);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        .submit-btn {
+            background: linear-gradient(45deg, var(--brand-red), var(--brand-blue));
+            color: white;
+            border: 2px solid var(--brand-yellow);
+            padding: 14px 25px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        .submit-btn:hover {
+            background: linear-gradient(45deg, var(--brand-blue), var(--brand-red));
+            transform: translateY(-2px);
+        }
+        .submit-btn i {
+            margin-right: 8px;
+        }
+
+        /* Form status messages */
+        .form-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+            font-weight: 500;
+        }
+        .form-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .form-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        /* Map section */
+        .map-section {
+            background: var(--brand-white);
+            border-radius: 12px;
+            padding: 20px;
+            border: 3px solid var(--brand-blue);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin: 40px 0;
+        }
+        .map-container {
+            width: 100%;
+            height: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--brand-red);
+        }
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* Business hours */
+        .hours-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px dashed #ccc;
+        }
+        .hours-row .days {
+            font-weight: bold;
+            color: var(--brand-blue);
+        }
+        .hours-row .time {
+            color: #333;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            background: var(--brand-white);
+            border-radius: 12px;
+            padding: 25px;
+            border: 3px solid var(--brand-blue);
+            margin: 40px 0;
+        }
+        .faq-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--brand-blue);
+        }
+        .faq-question i {
+            color: var(--brand-red);
+            transition: transform 0.3s;
+        }
+        .faq-answer {
+            padding-top: 10px;
+            color: #333;
+            display: none;
+        }
+        .faq-answer.show {
+            display: block;
+        }
+
+        /* WhatsApp button */
+        .whatsapp-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #25D366;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 2px solid var(--brand-yellow);
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        .whatsapp-btn:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+        }
+
+        /* Scroll to top button */
+        .scroll-top {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: var(--brand-red);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            border: 2px solid var(--brand-yellow);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 999;
+        }
+        .scroll-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .scroll-top:hover {
+            background: var(--brand-blue);
+            transform: translateY(-5px);
+        }
+
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 42px;
+            background: var(--brand-white);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            border-top: 3px solid var(--brand-red);
+            z-index: 1000;
+            padding: 0 5px;
+            box-sizing: border-box;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--brand-blue);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 5px 0;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+        .nav-item i {
+            font-size: 17px;
+            margin-bottom: 2px;
+            color: var(--brand-red);
+        }
+        .nav-item span {
+            font-weight: 500;
+        }
+        .nav-item:hover {
+            background: rgba(228,30,43,0.1);
+            transform: translateY(-2px);
+        }
+        .nav-item.active {
+            background: rgba(228,30,43,0.2);
+            color: var(--brand-red);
+        }
+        .nav-item.active i {
+            color: var(--brand-red);
+        }
+
+        /* Toast message */
+        .toast-message {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: linear-gradient(45deg, var(--brand-red), var(--brand-blue));
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 2px solid var(--brand-yellow);
+            animation: slideIn 0.3s, slideOut 0.3s 2s forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="contact-header">
+    <div class="header-inner">
+        <div class="logo-area">
+            <img src="https://i.supaimg.com/c60dbe6d-a5fc-4af2-8f02-c357aab69161.jpg" alt="Israel Gadgets" class="shop-logo">
+            <span class="store-name">Israel Gadgets Mbarara</span>
+        </div>
+        <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> Back to Store</a>
+    </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="contact-container">
+    <!-- Loading indicator -->
+    <div id="loading" class="loading">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <p>Loading contact details...</p>
+    </div>
+
+    <!-- Content (hidden initially) -->
+    <div id="contactContent" style="display: none;">
+        <h1 class="page-title">
+            <i class="fas fa-headset"></i> Get in Touch <i class="fas fa-headset"></i>
+        </h1>
+
+        <div class="contact-grid">
+            <!-- Left column: Contact Information -->
+            <div class="info-card">
+                <h2><i class="fas fa-address-card"></i> Contact Information</h2>
+                
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <span class="label">Visit Us</span>
+                        <span id="addressText">GBK Plaza, along Ntare Road, opposite Stanbic Bank, Shop No. G05, Mbarara, Uganda</span>
+                        <button class="copy-btn" onclick="copyAddress()"><i class="fas fa-copy"></i> Copy</button>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <i class="fas fa-phone-alt"></i>
+                    <div>
+                        <span class="label">Phone Numbers</span>
+                        <strong>MTN:</strong> <a href="tel:+256786544501" id="phoneMtn">+256 786 544 501</a><br>
+                        <strong>Airtel:</strong> <a href="tel:+256755712526" id="phoneAirtel">+256 755 712 526</a>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <i class="fab fa-whatsapp"></i>
+                    <div>
+                        <span class="label">WhatsApp</span>
+                        <a href="https://wa.me/256755712526" target="_blank" id="wa1">+256 755 712 526</a><br>
+                        <a href="https://wa.me/256786544501" target="_blank" id="wa2">+256 786 544 501</a>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <span class="label">Email</span>
+                        <a href="mailto:israelgadgetsmbarara@mail.com" id="contactEmail">israelgadgetsmbarara@mail.com</a>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <span class="label">Business Hours</span>
+                        <div id="businessHours">
+                            <!-- Will be filled by JS -->
+                            <div class="hours-row"><span class="days">Monday - Saturday</span><span class="time">8:00 AM – 7:00 PM</span></div>
+                            <div class="hours-row"><span class="days">Sunday</span><span class="time">10:00 AM – 5:00 PM</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="social-links" id="socialLinks">
+                    <!-- Will be filled by JS -->
+                    <a href="#" target="_blank" title="X (Twitter)"><i class="fab fa-twitter"></i></a>
+                    <a href="#" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                    <a href="#" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                </div>
+
+                <a href="https://wa.me/256755712526" class="whatsapp-btn" target="_blank" id="whatsappBigBtn">
+                    <i class="fab fa-whatsapp"></i> Chat with us on WhatsApp
+                </a>
+            </div>
+
+            <!-- Right column: Contact Form -->
+            <div class="contact-form">
+                <h2 style="color: var(--brand-red); margin-bottom: 20px;"><i class="fas fa-paper-plane"></i> Send us a Message</h2>
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Your Name *</label>
+                        <input type="text" id="name" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="e.g. 0777123456">
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message *</label>
+                        <textarea id="message" placeholder="How can we help you?" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Send Message</button>
+                    <div id="formStatus" class="form-status"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Map Section (using coordinates from settings) -->
+        <div class="map-section">
+            <h2 style="color: var(--brand-red); margin-bottom: 20px;"><i class="fas fa-map"></i> Find Us Here</h2>
+            <div class="map-container">
+                <iframe 
+                    id="mapIframe"
+                    src="about:blank"
+                    allowfullscreen="" 
+                    loading="lazy">
+                </iframe>
+            </div>
+            <p style="margin-top: 10px; text-align: center;" id="coordinatesDisplay">
+                <i class="fas fa-location-dot" style="color: var(--brand-red);"></i> 
+                <strong>Coordinates:</strong> <span id="coordSpan">-0.607411, 30.660626</span>
+            </p>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="faq-section">
+            <h2 style="color: var(--brand-red); margin-bottom: 20px;"><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+            <div id="faqContainer">
+                <!-- FAQ items will be injected here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== BOTTOM NAVIGATION ===== -->
+<div class="bottom-nav">
+    <a href="index.html" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="account.html" class="nav-item">
+        <i class="fas fa-user"></i>
+        <span>Account</span>
+    </a>
+    <a href="bundle-deals.html" class="nav-item">
+        <i class="fas fa-gift"></i>
+        <span>Bundle Deals</span>
+    </a>
+    <a href="location.html" class="nav-item">
+        <i class="fas fa-map-marker-alt"></i>
+        <span>Location</span>
+    </a>
+    <a href="contact.html" class="nav-item active">
+        <i class="fas fa-phone-alt"></i>
+        <span>Contact</span>
+    </a>
+</div>
+
+<!-- Scroll to Top Button -->
+<div class="scroll-top" id="scrollTopBtn" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+    <i class="fas fa-arrow-up"></i>
+</div>
+
+<script>
+    // ===== SUPABASE INIT (renamed to avoid conflict) =====
+    const SUPABASE_URL = 'https://xljtstvujqhlkqpcbtvm.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsanRzdHZ1anFobGtxcGNidHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDkwNDMsImV4cCI6MjA4NjU4NTA0M30.EIOVRbym8pOa7zNFp_wyqqfSF5_H0OZxit8nFRsJRBY';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ===== LOAD CONTACT SETTINGS =====
+    async function loadContactSettings() {
+        const { data: settings, error } = await supabaseClient
+            .from('settings')
+            .select('key, value');
+
+        if (error) {
+            console.error('Error fetching settings:', error);
+            hideLoaderAndShowContent();
+            return;
+        }
+
+        const getVal = (key, defaultVal) => {
+            const found = settings?.find(s => s.key === key);
+            return found ? found.value : defaultVal;
+        };
+
+        // Address
+        const address = getVal('contact_address', 'GBK Plaza, along Ntare Road, opposite Stanbic Bank, Shop No. G05, Mbarara, Uganda');
+        document.getElementById('addressText').innerText = address;
+
+        // Phone numbers
+        const phoneMtn = getVal('contact_phone_mtn', '+256 786 544 501');
+        const phoneAirtel = getVal('contact_phone_airtel', '+256 755 712 526');
+        document.getElementById('phoneMtn').innerText = phoneMtn;
+        document.getElementById('phoneMtn').href = 'tel:' + phoneMtn.replace(/\s/g, '');
+        document.getElementById('phoneAirtel').innerText = phoneAirtel;
+        document.getElementById('phoneAirtel').href = 'tel:' + phoneAirtel.replace(/\s/g, '');
+        document.getElementById('wa1').href = 'https://wa.me/' + phoneAirtel.replace(/\s/g, '');
+        document.getElementById('wa2').href = 'https://wa.me/' + phoneMtn.replace(/\s/g, '');
+        document.getElementById('whatsappBigBtn').href = 'https://wa.me/' + phoneAirtel.replace(/\s/g, '');
+
+        // Email
+        const email = getVal('contact_email', 'israelgadgetsmbarara@mail.com');
+        document.getElementById('contactEmail').innerText = email;
+        document.getElementById('contactEmail').href = 'mailto:' + email;
+
+        // Social links
+        const socialTwitter = getVal('social_twitter', 'https://x.com/israelgadgets');
+        const socialTiktok = getVal('social_tiktok', 'https://tiktok.com/@israelgadgetsmbra');
+        const socialInstagram = getVal('social_instagram', 'https://instagram.com/israelgadgets.mbarara');
+        const socialFacebook = getVal('social_facebook', 'https://facebook.com');
+        document.getElementById('socialLinks').innerHTML = `
+            <a href="${socialTwitter}" target="_blank" title="X (Twitter)"><i class="fab fa-twitter"></i></a>
+            <a href="${socialTiktok}" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>
+            <a href="${socialInstagram}" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="${socialFacebook}" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        `;
+
+        // Business hours
+        const hours = getVal('business_hours', [
+            { days: 'Monday - Saturday', hours: '8:00 AM – 7:00 PM' },
+            { days: 'Sunday', hours: '10:00 AM – 5:00 PM' },
+            { days: 'Public Holidays', hours: '10:00 AM – 4:00 PM' }
+        ]);
+        let hoursHtml = '';
+        hours.forEach(h => {
+            hoursHtml += `<div class="hours-row"><span class="days">${h.days}</span><span class="time">${h.hours}</span></div>`;
+        });
+        document.getElementById('businessHours').innerHTML = hoursHtml;
+
+        // FAQ items
+        const faqItems = getVal('faq_items', [
+            { question: 'Do you ship outside Mbarara?', answer: 'Yes, we ship anywhere in Uganda. Delivery fees depend on your location.' },
+            { question: 'What is your return policy?', answer: 'We accept returns within 7 days if the item is unused and in original packaging.' },
+            { question: 'Do you offer warranties on gadgets?', answer: 'Yes, most items come with a 6-month warranty.' },
+            { question: 'How quickly do you respond to messages?', answer: 'We usually reply within 2 hours during business hours.' }
+        ]);
+        let faqHtml = '';
+        faqItems.forEach(item => {
+            faqHtml += `
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>${item.question}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">${item.answer}</div>
+                </div>
+            `;
+        });
+        document.getElementById('faqContainer').innerHTML = faqHtml;
+
+        // Coordinates for map
+        const coords = getVal('location_coordinates', '-0.607411, 30.660626');
+        document.getElementById('coordSpan').innerText = coords;
+        const [lat, lng] = coords.split(',').map(c => parseFloat(c.trim()));
+        if (!isNaN(lat) && !isNaN(lng)) {
+                document.getElementById('mapIframe').src = `https://maps.google.com/maps?q=${lat},${lng}&output=embed`;
+        }
+
+        hideLoaderAndShowContent();
+    }
+
+    function hideLoaderAndShowContent() {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('contactContent').style.display = 'block';
+    }
+
+    // ===== CONTACT FORM HANDLING =====
+    document.getElementById('contactForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const message = document.getElementById('message').value.trim();
+
+        if (!name || !email || !message) {
+            showFormStatus('Please fill in all required fields.', 'error');
+            return;
+        }
+
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Sending...';
+        submitBtn.disabled = true;
+
+        try {
+            const { error } = await supabaseClient
+                .from('contact_messages')
+                .insert([{ name, email, phone: phone || null, message, created_at: new Date() }]);
+
+            if (error) throw error;
+
+            showFormStatus('✅ Thank you! Your message has been sent. We will get back to you soon.', 'success');
+            this.reset();
+        } catch (error) {
+            console.error('Error:', error);
+            showFormStatus('❌ Failed to send message. Please try again later or contact us directly.', 'error');
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+
+    function showFormStatus(message, type) {
+        const statusEl = document.getElementById('formStatus');
+        statusEl.textContent = message;
+        statusEl.className = 'form-status ' + type;
+    }
+
+    // ===== COPY ADDRESS FEATURE =====
+    window.copyAddress = function() {
+        const address = document.getElementById('addressText').innerText;
+        navigator.clipboard.writeText(address).then(() => {
+            showToast('Address copied to clipboard!');
+        }).catch(() => {
+            alert('Failed to copy address.');
+        });
+    };
+
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 2000);
+    }
+
+    // ===== FAQ TOGGLE =====
+    window.toggleFaq = function(questionElement) {
+        const answer = questionElement.nextElementSibling;
+        const icon = questionElement.querySelector('i');
+        answer.classList.toggle('show');
+        icon.style.transform = answer.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0)';
+    };
+
+    // ===== SCROLL TO TOP BUTTON VISIBILITY =====
+    window.addEventListener('scroll', function() {
+        const scrollBtn = document.getElementById('scrollTopBtn');
+        if (window.scrollY > 300) {
+            scrollBtn.classList.add('show');
+        } else {
+            scrollBtn.classList.remove('show');
+        }
+    });
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', loadContactSettings);
+</script>
+</body>
+</html>

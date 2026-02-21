@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account – Israel Gadgets Mbarara</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* ===== GLOBAL STYLES with red & blue mix ===== */
+        :root {
+            --brand-red: #e41e2b;
+            --brand-blue: #1a5fb4;
+            --brand-yellow: #f5a524;
+            --brand-white: #ffffff;
+            --brand-black: #000000;
+            --success: #26a269;
+            --danger: #c01c28;
+            --dark: #241f31;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(145deg, #f1f5f9 0%, #e6ecf5 100%);
+            color: #111;
+            line-height: 1.6;
+            padding-bottom: 70px;
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 20% 30%, rgba(228,30,43,0.1) 0%, transparent 30%),
+                              radial-gradient(circle at 90% 70%, rgba(26,95,180,0.1) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header */
+        .account-header {
+            background: linear-gradient(135deg, var(--brand-red), var(--brand-blue));
+            padding: 10px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .shop-logo {
+            height: 50px;
+            width: auto;
+            border-radius: 20px;
+            border: 2px solid var(--brand-yellow);
+        }
+        .store-name {
+            color: var(--brand-white);
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 2px 2px 0 var(--brand-blue);
+        }
+        .back-home {
+            background: var(--brand-white);
+            color: var(--brand-red);
+            padding: 6px 12px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            border: 2px solid var(--brand-yellow);
+            transition: all 0.3s;
+        }
+        .back-home:hover {
+            background: var(--brand-yellow);
+            color: var(--brand-black);
+            transform: translateY(-2px);
+        }
+
+        /* Main container */
+        .account-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        /* Loading spinner */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: var(--brand-blue);
+        }
+        .loading i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            color: var(--brand-red);
+        }
+
+        /* ===== AUTH FORMS (enhanced) ===== */
+        .auth-forms {
+            max-width: 520px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 35px 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3), 0 0 0 2px var(--brand-red), 0 0 0 5px rgba(26,95,180,0.2);
+            border: 1px solid rgba(255,255,255,0.7);
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            gap: 8px;
+            background: linear-gradient(to right, rgba(228,30,43,0.1), rgba(26,95,180,0.1));
+            padding: 6px;
+            border-radius: 60px;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 12px 8px;
+            border: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: transparent;
+            color: #2d3748;
+            border-radius: 40px;
+        }
+        .auth-tab.active {
+            background: linear-gradient(135deg, var(--brand-red), var(--brand-blue));
+            color: white;
+            box-shadow: 0 8px 16px -6px rgba(228,30,43,0.4);
+        }
+        .auth-tab:not(.active):hover {
+            background: rgba(228,30,43,0.1);
+            color: var(--brand-red);
+        }
+
+        .auth-form {
+            display: block;
+            animation: fadeSlide 0.4s ease;
+        }
+        .auth-form.hidden {
+            display: none;
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0.5; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 15px 20px;
+            margin-bottom: 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 40px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        .auth-form input:focus {
+            outline: none;
+            border-color: var(--brand-red);
+            box-shadow: 0 0 0 4px rgba(228,30,43,0.2), 0 8px 12px -4px rgba(26,95,180,0.2);
+            transform: scale(1.01);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, var(--brand-red) 0%, var(--brand-blue) 100%);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s;
+            margin-bottom: 8px;
+            box-shadow: 0 12px 20px -10px rgba(228,30,43,0.5);
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        .auth-btn:hover {
+            background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-red) 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -10px rgba(26,95,180,0.6);
+        }
+
+        .auth-error, .auth-message {
+            font-size: 14px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 600;
+            padding: 8px;
+            border-radius: 30px;
+        }
+        .auth-error { color: var(--danger); background: rgba(192,28,40,0.1); }
+        .auth-message { color: var(--success); background: rgba(38,162,105,0.1); }
+
+        .forgot-link { text-align: center; margin: 15px 0 10px; }
+        .forgot-link a {
+            color: var(--brand-blue);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 2px dotted transparent;
+            cursor: pointer;
+        }
+        .forgot-link a:hover { border-bottom-color: var(--brand-red); color: var(--brand-red); }
+
+        .reset-form, .set-password-form {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed rgba(228,30,43,0.3);
+            animation: fadeSlide 0.3s;
+        }
+        .reset-form.hidden, .set-password-form.hidden { display: none; }
+        .back-to-login { text-align: center; margin-top: 15px; }
+        .back-to-login a {
+            color: var(--brand-blue);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .back-to-login a:hover { border-bottom: 2px dotted var(--brand-red); }
+
+        /* Dashboard - with solid white cards for readability */
+        .dashboard { display: none; }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .welcome-message {
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--brand-red), var(--brand-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+        .logout-btn {
+            background: var(--brand-red);
+            color: white;
+            border: 2px solid var(--brand-yellow);
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover {
+            background: var(--brand-blue);
+            transform: translateY(-2px);
+        }
+
+        .dashboard-sections {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        @media (min-width: 768px) {
+            .dashboard-sections { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* Solid white cards with subtle border gradient */
+        .card {
+            background: white; /* changed to solid white */
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 15px 30px -12px rgba(0,0,0,0.2);
+            position: relative;
+            border: 3px solid transparent;
+            background-clip: padding-box;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -3px; left: -3px; right: -3px; bottom: -3px;
+            background: linear-gradient(135deg, var(--brand-red), var(--brand-blue));
+            border-radius: 26px;
+            z-index: -1;
+        }
+        .card h2 {
+            color: var(--brand-red);
+            margin-bottom: 20px;
+            font-size: 22px;
+            border-bottom: 3px solid var(--brand-blue);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-field { margin-bottom: 20px; }
+        .profile-field label {
+            font-weight: bold;
+            color: var(--brand-blue);
+            display: block;
+            margin-bottom: 5px;
+        }
+        .profile-field input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--brand-blue);
+            border-radius: 30px;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+        .profile-field input:focus {
+            border-color: var(--brand-red);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(228,30,43,0.2);
+        }
+        .profile-field .readonly { background: #f0f0f0; cursor: not-allowed; }
+
+        .save-profile-btn, .change-password-btn {
+            background: linear-gradient(135deg, var(--success), #1e7b4c);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            width: 100%;
+            border: 2px solid var(--brand-yellow);
+        }
+        .save-profile-btn:hover, .change-password-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        .delete-account-btn {
+            background: var(--danger);
+            color: white;
+            border: 2px solid var(--brand-yellow);
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        /* Password change section inside dashboard */
+        .password-change-section {
+            margin-top: 25px;
+            border-top: 2px dashed var(--brand-blue);
+            padding-top: 20px;
+        }
+
+        /* Order history (compact) */
+        .order-item.compact {
+            border: 2px solid var(--brand-blue);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .order-id { font-weight: bold; color: var(--brand-red); }
+        .order-status {
+            background: var(--brand-yellow);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .order-summary { font-size: 14px; color: #333; margin-top: 5px; }
+        .view-all-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--brand-blue);
+            font-weight: 600;
+            text-decoration: none;
+            border: 2px solid var(--brand-blue);
+            padding: 8px 16px;
+            border-radius: 30px;
+            transition: 0.2s;
+        }
+        .view-all-link:hover { background: var(--brand-blue); color: white; }
+        .no-orders { color: #666; font-style: italic; text-align: center; padding: 20px; }
+
+        /* Wishlist */
+        .wishlist-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .wishlist-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            background: #f8fafc;
+            border: 2px solid var(--brand-blue);
+            border-radius: 6px;
+        }
+        .wishlist-info { flex: 1; }
+        .wishlist-info h4 { margin: 0 0 5px; font-size: 16px; }
+        .wishlist-price { color: var(--brand-red); font-weight: bold; }
+        .wishlist-remove {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        .wishlist-remove:hover { background: var(--brand-blue); }
+        .empty-wishlist { text-align: center; padding: 20px; color: #666; }
+
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 42px;
+            background: var(--brand-white);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            border-top: 3px solid var(--brand-red);
+            z-index: 1000;
+            padding: 0 5px;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--brand-blue);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 5px 0;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+        .nav-item i { font-size: 16px; margin-bottom: 2px; color: var(--brand-red); }
+        .nav-item span { font-weight: 500; }
+        .nav-item:hover { background: rgba(228,30,43,0.1); transform: translateY(-2px); }
+        .nav-item.active { background: rgba(228,30,43,0.2); color: var(--brand-red); }
+        .nav-item.active i { color: var(--brand-red); }
+    </style>
+</head>
+<body>
+
+<header class="account-header">
+    <div class="header-inner">
+        <div class="logo-area">
+            <img src="https://i.supaimg.com/c60dbe6d-a5fc-4af2-8f02-c357aab69161.jpg" alt="Israel Gadgets" class="shop-logo">
+            <span class="store-name">Israel Gadgets Mbarara</span>
+        </div>
+        <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> Back to Store</a>
+    </div>
+</header>
+
+<div class="account-container" id="accountContainer">
+    <!-- Loading indicator -->
+    <div id="loading" class="loading"><i class="fas fa-circle-notch fa-spin"></i><p>Loading your account...</p></div>
+
+    <!-- Auth forms (Login / Signup / Reset) -->
+    <div id="authForms" class="auth-forms" style="display: none;">
+        <div class="auth-tabs">
+            <button id="tabLogin" class="auth-tab active">Login</button>
+            <button id="tabSignup" class="auth-tab">Sign Up</button>
+        </div>
+
+        <!-- Login Form (contains also reset & set password subforms) -->
+        <form id="loginForm" class="auth-form">
+            <input type="email" id="loginEmail" placeholder="Email address" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit" class="auth-btn">Login</button>
+            <div id="loginError" class="auth-error"></div>
+            <div class="forgot-link"><a id="forgotPasswordLink">Forgot password?</a></div>
+
+            <!-- Reset password request (email only) -->
+            <div id="resetPasswordForm" class="reset-form hidden">
+                <input type="email" id="resetEmail" placeholder="Your email address" required>
+                <button type="button" id="sendResetBtn" class="auth-btn">Send reset link</button>
+                <div id="resetMessage" class="auth-message"></div>
+                <div class="back-to-login"><a id="backToLoginLink">← Back to login</a></div>
+            </div>
+
+            <!-- Set new password form (visible after email link) -->
+            <div id="setNewPasswordForm" class="set-password-form hidden">
+                <input type="password" id="newPassword" placeholder="New password" required>
+                <input type="password" id="confirmNewPassword" placeholder="Confirm new password" required>
+                <button type="button" id="updatePasswordBtn" class="auth-btn">Set new password</button>
+                <div id="setPasswordMessage" class="auth-message"></div>
+                <div class="back-to-login"><a id="backToLoginFromSet">← Back to login</a></div>
+            </div>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signupForm" class="auth-form hidden">
+            <input type="text" id="signupName" placeholder="Full name" required>
+            <input type="email" id="signupEmail" placeholder="Email address" required>
+            <input type="tel" id="signupPhone" placeholder="Phone number (e.g. 0777123456)" required>
+            <input type="password" id="signupPassword" placeholder="Password" required>
+            <button type="submit" class="auth-btn">Sign Up</button>
+            <div id="signupError" class="auth-error"></div>
+            <div id="signupMessage" class="auth-message"></div>
+        </form>
+    </div>
+
+    <!-- Dashboard (logged in) -->
+    <div id="dashboard" class="dashboard">
+        <div class="dashboard-header">
+            <h1 class="welcome-message">Welcome, <span id="userName"></span>!</h1>
+            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+
+        <div class="dashboard-sections">
+            <!-- Profile Card with Password Change -->
+            <div class="card">
+                <h2><i class="fas fa-user-circle"></i> Profile</h2>
+                <div class="profile-field"><label>Full Name</label><input type="text" id="profileName" placeholder="Your name"></div>
+                <div class="profile-field"><label>Email</label><input type="email" id="profileEmail" class="readonly" readonly></div>
+                <div class="profile-field"><label>Phone</label><input type="tel" id="profilePhone" placeholder="Phone number"></div>
+                <button class="save-profile-btn" id="saveProfileBtn"><i class="fas fa-save"></i> Save Changes</button>
+                <div id="profileMessage" class="auth-message" style="margin-top: 10px;"></div>
+
+                <!-- Change Password Section (for logged in) -->
+                <div class="password-change-section">
+                    <h3 style="color: var(--brand-blue); margin-bottom: 15px;"><i class="fas fa-key"></i> Change Password</h3>
+                    <div class="profile-field">
+                        <label>Current Password</label>
+                        <input type="password" id="currentPassword" placeholder="Enter current password">
+                    </div>
+                    <div class="profile-field">
+                        <label>New Password</label>
+                        <input type="password" id="newDashboardPassword" placeholder="New password">
+                    </div>
+                    <div class="profile-field">
+                        <label>Confirm New Password</label>
+                        <input type="password" id="confirmDashboardPassword" placeholder="Confirm new password">
+                    </div>
+                    <button class="change-password-btn" id="changePasswordBtn"><i class="fas fa-sync-alt"></i> Update Password</button>
+                    <div id="dashboardPasswordMessage" class="auth-message" style="margin-top: 10px;"></div>
+                </div>
+
+                <button class="delete-account-btn" id="deleteAccountBtn"><i class="fas fa-trash-alt"></i> Delete Account</button>
+            </div>
+
+            <!-- Order History (compact, showing only 2 recent orders) -->
+            <div class="card">
+                <h2><i class="fas fa-history"></i> Recent Orders</h2>
+                <div id="orderHistory" class="order-history">
+                    <div class="loading"><i class="fas fa-circle-notch fa-spin"></i> Loading orders...</div>
+                </div>
+                <div id="viewAllLinkContainer" style="text-align: center; margin-top: 15px; display: none;">
+                    <a href="orders.html" class="view-all-link" onclick="alert('Full order history page coming soon!'); return false;"><i class="fas fa-list"></i> View all orders</a>
+                </div>
+            </div>
+
+            <!-- Wishlist -->
+            <div class="card" style="grid-column: span 2;">
+                <h2><i class="fas fa-heart"></i> My Wishlist</h2>
+                <div id="wishlistContainer" class="wishlist-container">
+                    <div class="loading"><i class="fas fa-circle-notch fa-spin"></i> Loading wishlist...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Navigation with active links -->
+<div class="bottom-nav">
+    <a href="index.html" class="nav-item">
+        <i class="fas fa-home"></i><span>Home</span>
+    </a>
+    <a href="account.html" class="nav-item active">
+        <i class="fas fa-user"></i><span>Account</span>
+    </a>
+    <a href="bundle-deals.html" class="nav-item">
+        <i class="fas fa-gift"></i><span>Bundle Deals</span>
+    </a>
+    <a href="location.html" class="nav-item">
+        <i class="fas fa-map-marker-alt"></i><span>Location</span>
+    </a>
+    <a href="contact.html" class="nav-item">
+        <i class="fas fa-phone-alt"></i><span>Contact</span>
+    </a>
+</div>
+
+<script>
+    (function() {
+        // Supabase init
+        const SUPABASE_URL = 'https://xljtstvujqhlkqpcbtvm.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsanRzdHZ1anFobGtxcGNidHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDkwNDMsImV4cCI6MjA4NjU4NTA0M30.EIOVRbym8pOa7zNFp_wyqqfSF5_H0OZxit8nFRsJRBY';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let userProfile = null;
+
+        // DOM elements
+        const loadingEl = document.getElementById('loading');
+        const authFormsEl = document.getElementById('authForms');
+        const dashboardEl = document.getElementById('dashboard');
+        const welcomeNameSpan = document.getElementById('userName');
+        const profileName = document.getElementById('profileName');
+        const profileEmail = document.getElementById('profileEmail');
+        const profilePhone = document.getElementById('profilePhone');
+        const orderHistoryEl = document.getElementById('orderHistory');
+        const wishlistContainer = document.getElementById('wishlistContainer');
+        const loginError = document.getElementById('loginError');
+        const signupError = document.getElementById('signupError');
+        const signupMessage = document.getElementById('signupMessage');
+        const profileMessage = document.getElementById('profileMessage');
+        const tabLogin = document.getElementById('tabLogin');
+        const tabSignup = document.getElementById('tabSignup');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+        const viewAllLinkContainer = document.getElementById('viewAllLinkContainer');
+        // Forgot/reset elements
+        const forgotLink = document.getElementById('forgotPasswordLink');
+        const resetPasswordForm = document.getElementById('resetPasswordForm');
+        const backToLogin = document.getElementById('backToLoginLink');
+        const backToLoginFromSet = document.getElementById('backToLoginFromSet');
+        const sendResetBtn = document.getElementById('sendResetBtn');
+        const resetEmail = document.getElementById('resetEmail');
+        const resetMessage = document.getElementById('resetMessage');
+        const setNewPasswordForm = document.getElementById('setNewPasswordForm');
+        const newPassword = document.getElementById('newPassword');
+        const confirmNewPassword = document.getElementById('confirmNewPassword');
+        const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+        const setPasswordMessage = document.getElementById('setPasswordMessage');
+        // Dashboard password change
+        const currentPassword = document.getElementById('currentPassword');
+        const newDashboardPassword = document.getElementById('newDashboardPassword');
+        const confirmDashboardPassword = document.getElementById('confirmDashboardPassword');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const dashboardPasswordMessage = document.getElementById('dashboardPasswordMessage');
+
+        // ---------- Helper UI functions ----------
+        window.showAuthForm = function(type) {
+            if (type === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                tabLogin.classList.add('active');
+                tabSignup.classList.remove('active');
+                showLoginForm();
+            } else {
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                tabSignup.classList.add('active');
+                tabLogin.classList.remove('active');
+            }
+            clearMessages();
+        };
+
+        function showLoginForm() {
+            document.querySelectorAll('#loginForm > input:not(#resetEmail):not(#newPassword):not(#confirmNewPassword)').forEach(el => el.style.display = 'block');
+            document.querySelector('#loginForm > .auth-btn[type="submit"]').style.display = 'block';
+            document.querySelector('.forgot-link').style.display = 'block';
+            resetPasswordForm.classList.add('hidden');
+            setNewPasswordForm.classList.add('hidden');
+        }
+
+        function showResetForm() {
+            document.querySelectorAll('#loginForm > input').forEach(el => el.style.display = 'none');
+            document.querySelector('#loginForm > .auth-btn[type="submit"]').style.display = 'none';
+            document.querySelector('.forgot-link').style.display = 'none';
+            resetPasswordForm.classList.remove('hidden');
+            setNewPasswordForm.classList.add('hidden');
+        }
+
+        function showSetPasswordForm() {
+            document.querySelectorAll('#loginForm > input').forEach(el => el.style.display = 'none');
+            document.querySelector('#loginForm > .auth-btn[type="submit"]').style.display = 'none';
+            document.querySelector('.forgot-link').style.display = 'none';
+            resetPasswordForm.classList.add('hidden');
+            setNewPasswordForm.classList.remove('hidden');
+        }
+
+        function clearMessages() {
+            loginError.innerHTML = ''; signupError.innerHTML = ''; signupMessage.innerHTML = '';
+            resetMessage.innerHTML = ''; setPasswordMessage.innerHTML = '';
+        }
+
+        tabLogin.addEventListener('click', () => window.showAuthForm('login'));
+        tabSignup.addEventListener('click', () => window.showAuthForm('signup'));
+
+        forgotLink.addEventListener('click', (e) => { e.preventDefault(); showResetForm(); });
+        backToLogin.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
+        if (backToLoginFromSet) backToLoginFromSet.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
+
+        // ---------- Password reset request (send email) ----------
+        sendResetBtn.addEventListener('click', async () => {
+            const email = resetEmail.value.trim();
+            if (!email) { resetMessage.style.color = 'var(--danger)'; resetMessage.textContent = 'Enter your email.'; return; }
+            resetMessage.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Sending...';
+            const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
+            if (error) {
+                resetMessage.style.color = 'var(--danger)'; resetMessage.textContent = error.message;
+            } else {
+                resetMessage.style.color = 'var(--success)'; resetMessage.textContent = 'Reset link sent! Check your email.';
+                resetEmail.value = '';
+            }
+        });
+
+        // ---------- Handle recovery token from URL ----------
+        async function handleRecoveryToken() {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const type = hashParams.get('type');
+            if (accessToken && type === 'recovery') {
+                const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: '' });
+                if (!error) {
+                    // Now user is logged in with recovery scope, show set password form
+                    showSetPasswordForm();
+                    tabLogin.classList.add('active');
+                    tabSignup.classList.remove('active');
+                    loginForm.classList.remove('hidden');
+                    signupForm.classList.add('hidden');
+                } else {
+                    alert('Invalid or expired reset link. Please request a new one.');
+                }
+                window.location.hash = '';
+            }
+        }
+
+        // ---------- Update password after recovery ----------
+        updatePasswordBtn.addEventListener('click', async () => {
+            const pwd = newPassword.value.trim();
+            const confirm = confirmNewPassword.value.trim();
+            if (!pwd || pwd !== confirm) {
+                setPasswordMessage.style.color = 'var(--danger)'; setPasswordMessage.textContent = 'Passwords do not match.';
+                return;
+            }
+            setPasswordMessage.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Updating...';
+            const { error } = await supabase.auth.updateUser({ password: pwd });
+            if (error) {
+                setPasswordMessage.style.color = 'var(--danger)'; setPasswordMessage.textContent = error.message;
+            } else {
+                setPasswordMessage.style.color = 'var(--success)'; setPasswordMessage.textContent = 'Password updated! Redirecting...';
+                setTimeout(() => window.location.reload(), 2000);
+            }
+        });
+
+        // ---------- Check user session ----------
+        async function checkUser() {
+            await handleRecoveryToken(); // check if we are in recovery flow
+
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error || !user) { showAuthUI(); return; }
+            currentUser = user;
+            await loadUserProfile(user.id);
+            showDashboard();
+        }
+
+        async function loadUserProfile(userId) {
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+            if (error) {
+                console.error('Error loading profile:', error);
+                userProfile = { id: userId, email: currentUser.email, full_name: '', phone: '' };
+            } else {
+                userProfile = data;
+            }
+            profileName.value = userProfile.full_name || '';
+            profileEmail.value = currentUser.email;
+            profilePhone.value = userProfile.phone || '';
+            welcomeNameSpan.textContent = userProfile.full_name || currentUser.email.split('@')[0];
+        }
+
+        function showAuthUI() {
+            loadingEl.style.display = 'none';
+            authFormsEl.style.display = 'block';
+            dashboardEl.style.display = 'none';
+        }
+
+        function showDashboard() {
+            loadingEl.style.display = 'none';
+            authFormsEl.style.display = 'none';
+            dashboardEl.style.display = 'block';
+            loadRecentOrders();
+            renderWishlist();
+        }
+
+        // ---------- Login ----------
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            loginError.innerHTML = '';
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) loginError.innerHTML = error.message;
+            else checkUser();
+        });
+
+        // ---------- Signup ----------
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const phone = document.getElementById('signupPhone').value;
+            const password = document.getElementById('signupPassword').value;
+            signupError.innerHTML = ''; signupMessage.innerHTML = '';
+            const { error } = await supabase.auth.signUp({
+                email, password,
+                options: { data: { full_name: name, phone } }
+            });
+            if (error) signupError.innerHTML = error.message;
+            else {
+                signupMessage.innerHTML = 'Sign up successful! Check your email for confirmation.';
+                setTimeout(() => window.showAuthForm('login'), 3000);
+            }
+        });
+
+        // ---------- Update profile ----------
+        saveProfileBtn.addEventListener('click', async () => {
+            if (!currentUser) return;
+            const updates = {
+                id: currentUser.id,
+                full_name: profileName.value.trim(),
+                phone: profilePhone.value.trim(),
+                updated_at: new Date().toISOString()
+            };
+            const { error } = await supabase.from('profiles').upsert(updates);
+            if (error) {
+                profileMessage.style.color = 'var(--danger)'; profileMessage.innerHTML = 'Error: ' + error.message;
+            } else {
+                profileMessage.style.color = 'var(--success)'; profileMessage.innerHTML = 'Profile updated!';
+                userProfile.full_name = updates.full_name;
+                welcomeNameSpan.textContent = updates.full_name || currentUser.email.split('@')[0];
+            }
+        });
+
+        // ---------- Change password (dashboard) ----------
+        changePasswordBtn.addEventListener('click', async () => {
+            const cur = currentPassword.value.trim();
+            const newPwd = newDashboardPassword.value.trim();
+            const confirm = confirmDashboardPassword.value.trim();
+            if (!cur || !newPwd || !confirm) {
+                dashboardPasswordMessage.style.color = 'var(--danger)'; dashboardPasswordMessage.textContent = 'All fields required.';
+                return;
+            }
+            if (newPwd !== confirm) {
+                dashboardPasswordMessage.style.color = 'var(--danger)'; dashboardPasswordMessage.textContent = 'New passwords do not match.';
+                return;
+            }
+            // Verify current password by re-authenticating
+            const { error: signInError } = await supabase.auth.signInWithPassword({ email: currentUser.email, password: cur });
+            if (signInError) {
+                dashboardPasswordMessage.style.color = 'var(--danger)'; dashboardPasswordMessage.textContent = 'Current password is incorrect.';
+                return;
+            }
+            dashboardPasswordMessage.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Updating...';
+            const { error } = await supabase.auth.updateUser({ password: newPwd });
+            if (error) {
+                dashboardPasswordMessage.style.color = 'var(--danger)'; dashboardPasswordMessage.textContent = error.message;
+            } else {
+                dashboardPasswordMessage.style.color = 'var(--success)'; dashboardPasswordMessage.textContent = 'Password changed!';
+                currentPassword.value = ''; newDashboardPassword.value = ''; confirmDashboardPassword.value = '';
+            }
+        });
+
+        // ---------- Delete account (original, with warning) ----------
+        deleteAccountBtn.addEventListener('click', async () => {
+            if (!currentUser) return;
+            const confirmDelete = confirm('Are you sure you want to delete your account? This action is irreversible and all your data will be permanently removed.');
+            if (!confirmDelete) return;
+            deleteAccountBtn.disabled = true;
+            deleteAccountBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Deleting...';
+            try {
+                await supabase.from('profiles').delete().eq('id', currentUser.id);
+                alert('Account deletion requires a secure backend. Please contact support to delete your account. For demo, signing out.');
+                await supabase.auth.signOut();
+                window.location.reload();
+            } catch (error) {
+                alert('Error deleting account: ' + error.message);
+                deleteAccountBtn.disabled = false;
+                deleteAccountBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete Account';
+            }
+        });
+
+        // ---------- Load recent orders (only 2) ----------
+        async function loadRecentOrders() {
+            if (!currentUser) return;
+            const { data: orders, error } = await supabase
+                .from('orders')
+                .select(`id, order_id, created_at, status, total, order_items ( product_name, quantity )`)
+                .eq('user_id', currentUser.id)
+                .order('created_at', { ascending: false })
+                .limit(3); // Changed from 3 to 2
+            if (error) {
+                orderHistoryEl.innerHTML = `<div class="auth-error">Error loading orders: ${error.message}</div>`;
+                return;
+            }
+            if (!orders || orders.length === 0) {
+                orderHistoryEl.innerHTML = '<div class="no-orders"><i class="fas fa-box-open"></i> You have no orders yet.</div>';
+                viewAllLinkContainer.style.display = 'none';
+                return;
+            }
+            let html = '';
+            orders.forEach(order => {
+                const itemCount = order.order_items ? order.order_items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+                html += `
+                    <div class="order-item compact">
+                        <div class="order-header">
+                            <span class="order-id">Order #${order.order_id}</span>
+                            <span class="order-status">${order.status}</span>
+                            <span class="order-date">${new Date(order.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div class="order-summary">
+                            ${itemCount} item(s) • UGX ${order.total ? order.total.toLocaleString() : '0'}
+                        </div>
+                    </div>
+                `;
+            });
+            orderHistoryEl.innerHTML = html;
+            viewAllLinkContainer.style.display = 'block';
+        }
+
+        // ---------- Wishlist (from localStorage) ----------
+        function renderWishlist() {
+            let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            if (wishlist.length === 0) {
+                wishlistContainer.innerHTML = '<div class="empty-wishlist"><i class="fas fa-heart-broken"></i> Your wishlist is empty.</div>';
+                return;
+            }
+            let html = '';
+            wishlist.forEach(item => {
+                html += `
+                    <div class="wishlist-item" data-id="${item.id}">
+                        <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}">
+                        <div class="wishlist-info">
+                            <h4>${item.name}</h4>
+                            <div class="wishlist-price">UGX ${item.price ? item.price.toLocaleString() : '0'}</div>
+                            ${item.brand ? `<div style="font-size: 13px; color: #666;">${item.brand}</div>` : ''}
+                        </div>
+                        <button class="wishlist-remove" onclick="removeFromWishlist(${item.id})"><i class="fas fa-trash"></i> Remove</button>
+                    </div>
+                `;
+            });
+            wishlistContainer.innerHTML = html;
+        }
+
+        window.removeFromWishlist = function(productId) {
+            let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            wishlist = wishlist.filter(item => item.id !== productId);
+            localStorage.setItem('wishlist', JSON.stringify(wishlist));
+            renderWishlist();
+        };
+
+        // ---------- Logout ----------
+        logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.reload();
+        });
+
+        // ---------- Init ----------
+        checkUser();
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save big! Bundle Deals – Israel Gadgets Mbarara</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* ===== GLOBAL STYLES ===== */
+        :root {
+            --brand-red: #e41e2b;
+            --brand-blue: #1a5fb4;
+            --brand-yellow: #f5a524;
+            --brand-white: #ffffff;
+            --brand-black: #000000;
+            --success: #26a269;
+            --danger: #c01c28;
+            --warning: #f5a524;
+            --dark: #241f31;
+            --sale: #c64600;
+            --electric: #9141ac;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #111;
+            line-height: 1.6;
+            padding-bottom: 70px;
+        }
+
+        /* ----- MINIMAL HEADER (logo + oval only) ----- */
+        header {
+            background: linear-gradient(45deg, var(--brand-red), #d01522);
+            padding: 9px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 200;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 16px;
+        }
+        .shop-logo {
+            height: 55px;
+            width: auto;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+        .shop-logo:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
+        .logo-oval {
+            height: 45px;
+            background: linear-gradient(135deg, var(--brand-red), var(--brand-blue));
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--brand-white);
+            font-weight: bold;
+            font-size: 18px;
+            border: 3px solid var(--brand-yellow);
+            box-shadow: 0 4px 12px rgba(228, 30, 43, 0.4);
+            overflow: hidden;
+            padding: 0 20px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .logo-oval:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(228, 30, 43, 0.5);
+        }
+        .logo-oval marquee {
+            width: 100%;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* Cart modal */
+        #cart-box {
+            position: fixed;
+            right: 20px;
+            top: 100px;
+            width: 360px;
+            max-height: 70vh;
+            background: var(--brand-white);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(11,22,60,0.15);
+            display: none;
+            z-index: 300;
+            overflow-y: auto;
+            border: 3px solid var(--brand-red);
+        }
+        #cart-box h3 {
+            margin: 0 0 15px;
+            padding-right: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--brand-blue);
+            color: var(--brand-red);
+        }
+        .close-modal-btn {
+            background: var(--brand-red);
+            border: 2px solid var(--brand-white);
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--brand-white);
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        .close-modal-btn:hover {
+            background: var(--brand-blue);
+            transform: rotate(90deg);
+        }
+        .cart-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .cart-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 6px;
+            background: #f8fafc;
+        }
+        .cart-item-info {
+            flex: 1;
+            font-size: 14px;
+        }
+        .cart-item-info strong {
+            color: var(--brand-red);
+        }
+        .bundle-badge-info {
+            font-size: 12px;
+            color: var(--brand-blue);
+            margin-top: 4px;
+            font-style: italic;
+        }
+        .cart-remove {
+            background: var(--brand-red);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--brand-blue);
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .cart-summary {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 2px solid var(--brand-yellow);
+            cursor: pointer;
+            background: linear-gradient(45deg, var(--brand-red), var(--brand-blue));
+            color: var(--brand-white);
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: linear-gradient(45deg, var(--brand-blue), var(--brand-red));
+            transform: translateY(-2px);
+        }
+
+        /* Bundle grid */
+        .bundle-container {
+            max-width: 1200px;
+            margin: 100px auto 30px;
+            padding: 0 15px;
+        }
+        .page-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--brand-red);
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .fallback-notice {
+            text-align: center;
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 8px 15px;
+            border-radius: 40px;
+            margin: 0 auto 25px auto;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .bundle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        .bundle-card {
+            background: var(--brand-white);
+            border-radius: 12px;
+            padding: 14px;
+            border: 3px solid var(--brand-blue);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .bundle-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--brand-red);
+            box-shadow: 0 8px 25px rgba(228,30,43,0.15);
+        }
+        .bundle-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--brand-red);
+            color: var(--brand-white);
+            padding: 5px 15px;
+            border-bottom-left-radius: 12px;
+            font-weight: bold;
+            border: 2px solid var(--brand-yellow);
+            font-size: 14px;
+            z-index: 2;
+        }
+        .item-count-badge {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: var(--brand-blue);
+            color: white;
+            padding: 5px 15px;
+            border-bottom-right-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 2px solid var(--brand-yellow);
+            z-index: 2;
+        }
+        .bundle-card h3 {
+            color: var(--brand-red);
+            margin: 25px 0 15px 0;
+            font-size: 22px;
+            padding-right: 30px;
+        }
+        .bundle-items {
+            margin: 0 0 15px 20px;
+            color: var(--brand-blue);
+            list-style-type: disc;
+        }
+        .price-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 18px;
+        }
+        .discounted-price {
+            color: var(--brand-red);
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .save-badge {
+            background: var(--success);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .add-bundle-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, var(--brand-red), var(--brand-blue));
+            color: white;
+            border: 2px solid var(--brand-yellow);
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .loading-skeleton {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        .skeleton-card {
+            background: #e2e8f0;
+            border-radius: 12px;
+            height: 350px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        .error-message {
+            text-align: center;
+            padding: 40px;
+            color: var(--danger);
+            font-size: 18px;
+        }
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 41px;
+            background: var(--brand-white);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            border-top: 3px solid var(--brand-red);
+            z-index: 1000;
+            padding: 0 5px;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--brand-blue);
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 5px 0;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+        .nav-item i {
+            font-size: 17px;
+            margin-bottom: 2px;
+            color: var(--brand-red);
+        }
+        .nav-item.active {
+            background: rgba(228,30,43,0.2);
+            color: var(--brand-red);
+        }
+        /* Toast */
+        .toast-message {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: linear-gradient(45deg, var(--brand-red), var(--brand-blue));
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 2px solid var(--brand-yellow);
+            animation: slideIn 0.3s, slideOut 0.3s 2s forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        @media (max-width: 768px) {
+            .logo-oval { font-size: 16px; padding: 0 15px; }
+            .shop-logo { height: 45px; }
+        }
+/* footer */
+footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
+.footer-content{max-width:1200px;margin:0 auto;padding-top:20px;border-top:1px solid #eee}
+    </style>
+</head>
+<body>
+
+<!-- ===== MINIMAL HEADER: LOGO + OVAL ONLY ===== -->
+<header>
+    <div class="header-content">
+        <img src="https://i.supaimg.com/c60dbe6d-a5fc-4af2-8f02-c357aab69161.jpg" alt="ISRAEL GADGETS" class="shop-logo">
+        <div class="logo-oval">
+            <marquee behavior="alternate" scrolldelay="800">ISRAEL GADGETS MBARARA</marquee>
+        </div>
+    </div>
+</header>
+
+<!-- ===== CART MODAL ===== -->
+<div id="cart-box">
+    <button class="close-modal-btn" onclick="closeCart()">×</button>
+    <h3>Your Cart</h3>
+    <div id="cart-items"></div>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="bundle-container">
+    <h1 class="page-title">
+        <i class="fas fa-gift"></i> Save big! Bundle Deals <i class="fas fa-gift"></i>
+    </h1>
+
+    <!-- Fallback notice (shown when no bundles in DB) -->
+    <div id="fallbackNotice" class="fallback-notice" style="display: none;">
+        ⚡ Using sample deals – no bundles found in database.
+    </div>
+
+    <div id="loadingSkeleton" class="loading-skeleton">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+    </div>
+
+    <div id="bundleGrid" class="bundle-grid" style="display: none;"></div>
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+</div>
+
+<!-- ===== BOTTOM NAVIGATION ===== -->
+<div class="bottom-nav">
+    <a href="index.html" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="account.html" class="nav-item">
+        <i class="fas fa-user"></i>
+        <span>Account</span>
+    </a>
+    <a href="bundle-deals.html" class="nav-item active">
+        <i class="fas fa-gift"></i>
+        <span>Bundle Deals</span>
+    </a>
+    <a href="location.html" class="nav-item">
+        <i class="fas fa-map-marker-alt"></i>
+        <span>Location</span>
+    </a>
+    <a href="contact.html" class="nav-item">
+        <i class="fas fa-phone-alt"></i>
+        <span>Contact</span>
+    </a>
+</div>
+<footer>
+  <div class="footer-content">
+    © 2026  Israel Gadgets Mbarara| 🚚 Delivery available across Mbarara, Ishaka & Bushenyi
+    <br><small>Your trusted partner for all phone, tablets, power banks, and many accesories </small>
+      <h3>We Own The Latest Ones</h3>
+  </div>
+</footer>
+
+
+<script>
+    // ===== SUPABASE INIT =====
+    const SUPABASE_URL = 'https://xljtstvujqhlkqpcbtvm.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsanRzdHZ1anFobGtxcGNidHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDkwNDMsImV4cCI6MjA4NjU4NTA0M30.EIOVRbym8pOa7zNFp_wyqqfSF5_H0OZxit8nFRsJRBY';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ===== GLOBAL VARIABLES =====
+    let bundles = [];
+
+    // Fallback bundles (same as original, but save_percent is ignored; we compute dynamically)
+    const fallbackBundles = [
+        {
+            id: 1,
+            name: "Smartphone Starter Pack",
+            items: [
+                { id: 2, name: "iPhone 14 Pro", price: 2000000 },
+                { id: 11, name: "AirPods Pro", price: 850000 },
+                { name: "Premium Case", price: 25000 },
+                { name: "Screen Protector", price: 15000 }
+            ],
+            total: 2890000,
+            discounted: 2560000,
+            image: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=300'
+        },
+        {
+            id: 2,
+            name: "Power Combo",
+            items: [
+                { id: 4, name: "Samsung Galaxy A54 5G", price: 1100000 },
+                { id: 9, name: "Anker 733 Power Bank", price: 250000 },
+                { name: "Charging Cable Set", price: 30000 },
+                { name: "Car Charger", price: 25000 }
+            ],
+            total: 1405000,
+            discounted: 1232500,
+            image: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=300'
+        },
+        {
+            id: 3,
+            name: "Entertainment Bundle",
+            items: [
+                { id: 5, name: "Infinix Note 30 Pro", price: 850000 },
+                { name: "Wireless Earbuds", price: 80000 },
+                { name: "Phone Stand Kit", price: 15000 },
+                { name: "32GB MicroSD Card", price: 5000 }
+            ],
+            total: 950000,
+            discounted: 712500,
+            image: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=300'
+        }
+    ];
+
+    // ===== CART FUNCTIONS (shared with main store) =====
+    function getCart() {
+        return JSON.parse(localStorage.getItem('cart')) || [];
+    }
+    function saveCart(cart) {
+        localStorage.setItem('cart', JSON.stringify(cart));
+    }
+    function showQuickMessage(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2300);
+    }
+
+    // Cart modal functions
+    window.closeCart = function() {
+        document.getElementById('cart-box').style.display = 'none';
+    };
+
+    // Render cart items – bundles now show only the total price, no individual item prices
+    function renderCartItems() {
+        const cart = getCart();
+        const container = document.getElementById('cart-items');
+        if (!container) return;
+        if (cart.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:20px;">Your cart is empty.</div>';
+            return;
+        }
+        let html = '';
+        let subtotal = 0;
+        cart.forEach((item, index) => {
+            subtotal += item.price * item.quantity;
+            html += `<div class="cart-item">`;
+            html += `<img src="${item.image || 'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=50'}" alt="${item.name}">`;
+            html += `<div class="cart-item-info">`;
+            html += `<strong>${item.name}</strong> – UGX ${item.price.toLocaleString()}`;
+            if (item.quantity > 1) html += ` x ${item.quantity}`;
+            if (item.isBundle && item.bundleItems) {
+                html += `<div class="bundle-badge-info"><i class="fas fa-cubes"></i> Bundle includes ${item.bundleItems.length} items</div>`;
+            }
+            html += `</div>`;
+            html += `<button class="cart-remove" onclick="removeCartItem(${index})">Remove</button>`;
+            html += `</div>`;
+        });
+        html += `
+            <div class="cart-summary">
+                <strong>Subtotal: UGX ${subtotal.toLocaleString()}</strong><br>
+                <small>Checkout is only available on the main store.</small>
+                <button class="btn" style="margin-top:10px;" onclick="window.location.href='index.html'">Go to Main Store</button>
+            </div>
+        `;
+        container.innerHTML = html;
+    }
+
+    window.removeCartItem = function(index) {
+        let cart = getCart();
+        cart.splice(index, 1);
+        saveCart(cart);
+        renderCartItems();
+        showQuickMessage('Item removed from cart');
+    };
+
+    // ===== FETCH BUNDLES (fixed to always show fallback if none) =====
+    async function fetchBundles() {
+        const loading = document.getElementById('loadingSkeleton');
+        const grid = document.getElementById('bundleGrid');
+        const errorDiv = document.getElementById('errorMessage');
+        const fallbackNotice = document.getElementById('fallbackNotice');
+
+        loading.style.display = 'grid';
+        grid.style.display = 'none';
+        errorDiv.style.display = 'none';
+        fallbackNotice.style.display = 'none';
+
+        try {
+            const { data, error } = await supabaseClient.from('bundles').select('*');
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                bundles = data.map(b => ({ ...b, items: Array.isArray(b.items) ? b.items : [] }));
+                fallbackNotice.style.display = 'none';
+            } else {
+                // No data – use fallback
+                bundles = fallbackBundles;
+                fallbackNotice.style.display = 'inline-block';
+            }
+        } catch (e) {
+            console.error('Error fetching bundles:', e);
+            bundles = fallbackBundles;
+            fallbackNotice.style.display = 'inline-block';
+        } finally {
+            loading.style.display = 'none';
+            renderBundles();
+        }
+    }
+
+    function renderBundles() {
+        const gridEl = document.getElementById('bundleGrid');
+        const errorDiv = document.getElementById('errorMessage');
+
+        if (!bundles || bundles.length === 0) {
+            gridEl.style.display = 'none';
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> No bundle deals available.';
+            return;
+        }
+
+        gridEl.style.display = 'grid';
+        gridEl.innerHTML = '';
+        bundles.forEach(bundle => {
+            const items = bundle.items || [];
+            const itemsHtml = items.map(item => `<li>${item.name} – UGX ${item.price.toLocaleString()}</li>`).join('');
+            // Calculate savings and percentage dynamically from total and discounted
+            const total = bundle.total;
+            const discounted = bundle.discounted;
+            const saved = total - discounted;
+            // Avoid division by zero; if total is 0, set percentage to 0
+            const savePercent = total > 0 ? Math.round((saved / total) * 100) : 0;
+
+            const card = document.createElement('div');
+            card.className = 'bundle-card';
+            card.innerHTML = `
+                <div class="bundle-badge">SAVE ${savePercent}%</div>
+                <div class="item-count-badge"><i class="fas fa-cubes"></i> ${items.length} items</div>
+                <h3><i class="fas fa-box"></i> ${bundle.name}</h3>
+                <ul class="bundle-items">${itemsHtml}</ul>
+                <div class="price-row">
+                    <span class="original-price">UGX ${total.toLocaleString()}</span>
+                    <span class="discounted-price">UGX ${discounted.toLocaleString()}</span>
+                    <span class="save-badge"><i class="fas fa-tag"></i> Save UGX ${saved.toLocaleString()}</span>
+                </div>
+                <div class="bundle-footer">
+                    <button class="add-bundle-btn" onclick="addBundleToCart(${bundle.id})">
+                        <i class="fas fa-cart-plus"></i> Add Bundle to Cart
+                    </button>
+                </div>
+            `;
+            gridEl.appendChild(card);
+        });
+    }
+
+    // ===== ADD BUNDLE TO CART (as a single item with its discounted price) =====
+    window.addBundleToCart = function(bundleId) {
+        const bundle = bundles.find(b => b.id === bundleId);
+        if (!bundle) return;
+
+        let cart = getCart();
+
+        // Check if this bundle already exists in cart (by id)
+        const existingIndex = cart.findIndex(item => item.bundleId === bundleId);
+        if (existingIndex > -1) {
+            cart[existingIndex].quantity += 1;
+        } else {
+            const bundleItem = {
+                bundleId: bundle.id,
+                name: bundle.name,
+                price: bundle.discounted,
+                quantity: 1,
+                image: bundle.image || 'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=300',
+                isBundle: true,
+                bundleItems: bundle.items.map(item => ({
+                    name: item.name,
+                    price: item.price
+                }))
+            };
+            cart.push(bundleItem);
+        }
+
+        saveCart(cart);
+        renderCartItems();
+        const savedAmount = bundle.total - bundle.discounted;
+        showQuickMessage(`✅ Added ${bundle.name} to cart! Saved UGX ${savedAmount.toLocaleString()}`);
+    };
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchBundles();
+        // Ensure content is below fixed header
+        const header = document.querySelector('header');
+        const container = document.querySelector('.bundle-container');
+        if (header && container) {
+            const headerHeight = header.offsetHeight;
+            container.style.marginTop = (headerHeight + 20) + 'px';
+        }
+        // Initialize cart display (though hidden)
+        renderCartItems();
+    });
+</script>
+</body>
+</html>
