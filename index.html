@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>ISRAEL GADGETS MBARARA Owns The Latest Ones</title>
+<title>ISRAEL GADGETS MBARARA – SHOP SMARTPHONES, TABLETS, POWER BANKS, among others</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- Supabase JS Client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -624,7 +624,7 @@ header.header-half-hidden {
     border-color: var(--brand-yellow);
     box-shadow: 0 4px 12px rgba(228,30,43,0.3);
 }
-.products-wrapper{max-width:none;margin:20px 5;padding:5}  /* reduced from 20px */
+.products-wrapper{max-width:none;margin:20px 2px;padding:2px}  /* reduced from 20px */
 .products{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px}
 .product{
     background: var(--brand-white);
@@ -1727,7 +1727,7 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
 <!-- ========== PROMO BANNERS ========== -->
 <div class="promo-banner">
     <h4>At ISRAEL GADGETS MBARARA, We Own The Latest Ones</h4>
-    <p>📍FREE DELIVERY available on orders over UGX 200,000 ! • 📞 Call: +256 755 712 526 • ⚡ Fast 🚚 Delivery in Mbarara, Ishaka and Bushenyi</p>
+    <p>📍FREE DELIVERY available in Mbarara, Ishaka & Bushenyi! • 📞 Call: +256 755 712 526 • ⚡ Fast 🚚 Delivery in Mbarara, Ishaka and Bushenyi</p>
 </div>
 
 <!-- NEW WRAPPER FOR SIDE-BY-SIDE ON DESKTOP -->
@@ -1831,10 +1831,9 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
     <div id="wishlist-items"></div>
 </div>
 
-<!-- ========== CHECKOUT MODAL ========== -->
+<!-- ========== CHECKOUT MODAL (IMPROVED: WIDER, SHORTER, BUTTONS SIDE-BY-SIDE) ========== -->
 <div id="checkout-modal">
     <div id="checkout-form">
-        <!-- New sticky header with close button -->
         <div class="checkout-header">
             <h3>Checkout</h3>
             <button class="close-detail" onclick="closeCheckout()">✕</button>
@@ -1854,7 +1853,7 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
                 <strong>🚚 Delivery Info:</strong> Delivery available in Mbarara, Ishaka & Bushenyi.
             </p>
         </div>
-        <input id="customer-address" placeholder="Example:  Mbarara University Main Gate" required />
+        <input id="customer-address" placeholder="Example: Mbarara University Main Gate" required />
         <div id="promo-code-section">
             <label style="display:block;margin-bottom:8px;font-weight:500">
                 <i class="fas fa-tag"></i> Promo Code (Optional)
@@ -1878,8 +1877,11 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
             <p id="payment-instructions"></p>
         </div>
         <div class="summary" id="checkout-summary"></div>
-        <button onclick="submitOrder()" class="btn-confirm">Confirm Order</button>
-        <button onclick="closeCheckout()" class="btn-cancel">Cancel</button>
+        <!-- Buttons now side by side -->
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button onclick="submitOrder()" class="btn-confirm" style="flex:1;">Confirm Order</button>
+            <button onclick="closeCheckout()" class="btn-cancel" style="flex:1;">Cancel</button>
+        </div>
     </div>
 </div>
 
@@ -1968,15 +1970,15 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 41px;
+    height: 34px;
     background: var(--brand-white);
     display: flex;
     justify-content: space-around;
-    align-items: center;
+    align-items: flex-end;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    border-top: 3px solid var(--brand-red);
+    border-top: 2px solid var(--brand-red);
     z-index: 1000;
-    padding: 0 5px;
+    padding-bottom: 0px;
     box-sizing: border-box;
   }
   .nav-item {
@@ -1984,19 +1986,19 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     background: none;
     border: none;
     color: var(--brand-blue);
-    font-size: 10px;
+    font-size: 7px;
     cursor: pointer;
     transition: all 0.2s;
-    padding: 5px 0;
-    border-radius: 8px;
+    padding: 2px 0 0 0;
+    border-radius: 7px;
     text-decoration: none;
   }
   .nav-item i {
-    font-size: 17px;
+    font-size: 18px;
     margin-bottom: 2px;
     color: var(--brand-red);
   }
@@ -2012,15 +2014,15 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
   }
   /* Add padding to body so content isn't hidden behind fixed bar */
   body {
-    padding-bottom: 70px;
+    padding-bottom: 50px;
   }
   /* On very small screens, reduce font size a bit */
   @media (max-width: 480px) {
     .nav-item {
-      font-size: 10px;
+      font-size: 9px;
     }
     .nav-item i {
-      font-size: 18px;
+      font-size: 14px;
     }
   }
 </style>
@@ -2963,7 +2965,9 @@ async function submitOrder() {
             }
         }
 
-        const finalDiscount = (originalSubtotal - (total - shipping)) + (discount || 0);
+        // Calculate total discount (markdown + promo)
+        const productMarkdownTotal = originalSubtotal - subtotal;
+        const finalDiscount = productMarkdownTotal + (discount || 0);
 
         // Insert order using the custom orderId as the primary identifier
         const { error: orderError } = await supabaseClient.from('orders').insert({
