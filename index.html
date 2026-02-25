@@ -290,7 +290,7 @@ header.header-half-hidden {
     position:relative;
     font-size:18px;            /* was 18px */
     width:30px;                /* was 35px */
-    height:30px;               /* was 35px */
+    height:30px;              /* was 35px */
     display:flex;
     align-items:center;
     justify-content:center;
@@ -1390,7 +1390,7 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
 }
 @keyframes spin{
     0%{transform:rotate(0deg)}
-    100%{transform:rotate(360deg)}
+    100%{transform:rotate(180deg)}
 }
 /* Removed old close-detail styles – now defined above */
 @media (max-width: 768px){
@@ -1831,7 +1831,7 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
     <div id="wishlist-items"></div>
 </div>
 
-<!-- ========== CHECKOUT MODAL (IMPROVED: WIDER, SHORTER, BUTTONS SIDE-BY-SIDE) ========== -->
+<!-- ========== CHECKOUT MODAL (UPDATED LOCATION SECTION) ========== -->
 <div id="checkout-modal">
     <div id="checkout-form">
         <div class="checkout-header">
@@ -1854,6 +1854,16 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
             </p>
         </div>
         <input id="customer-address" placeholder="Example: Mbarara University Main Gate" required />
+        
+        <!-- NEW: Silent location capture button (no manual fallback) -->
+        <div style="margin: 8px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <button type="button" onclick="getUserLocation()" class="btn" style="flex: 1; padding: 10px;">
+                <i class="fas fa-map-marker-alt"></i> 📍 Click here to add your location
+            </button>
+            <span id="location-status" style="font-size: 12px; color: var(--brand-blue);"></span>
+        </div>
+        <input type="hidden" id="customer-coordinates" name="coordinates" value="">
+        
         <div id="promo-code-section">
             <label style="display:block;margin-bottom:8px;font-weight:500">
                 <i class="fas fa-tag"></i> Promo Code (Optional)
@@ -2641,12 +2651,12 @@ function updateWishlistUI() {
 }
 function closeWishlist() { wishlistModal.style.display = 'none'; }
 
-// ========== RECENTLY VIEWED ==========
+// ========== RECENTLY VIEWED (UPDATED: max 4) ==========
 function addToRecentlyViewed(productId) {
     const index = recentlyViewed.indexOf(productId);
     if (index > -1) recentlyViewed.splice(index, 1);
     recentlyViewed.unshift(productId);
-    recentlyViewed = recentlyViewed.slice(0, 6);
+    recentlyViewed = recentlyViewed.slice(0, 4);   // 👈 changed from 6 to 4
     localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
     updateRecentlyViewedUI();
 }
@@ -2684,7 +2694,7 @@ function viewFlashSaleProducts() {
     if (flashSaleProducts.length > 0) { activeCategory = 'all'; searchBar.value = ''; renderProducts(); document.querySelector('.products-wrapper').scrollIntoView({ behavior: 'smooth' }); showQuickMessage('Showing flash sale products! ⚡'); }
 }
 
-// ========== BUNDLE DEALS ==========
+// ========== BUNDLE DEALS (UPDATED: max 3) ==========
 function renderBundleCards() {
     const container = document.getElementById('bundle-grid-container');
     if (!container) return;
@@ -2694,8 +2704,11 @@ function renderBundleCards() {
         return;
     }
 
+    // 👇 Limit to the first 3 bundle IDs
+    let bundleKeys = Object.keys(bundleDeals).slice(0, 3);
+
     let html = '';
-    for (let id in bundleDeals) {
+    bundleKeys.forEach(id => {
         const bundle = bundleDeals[id];
         const itemsHtml = bundle.items.map(item => `<li>${item.name} – UGX ${item.price.toLocaleString()}</li>`).join('');
         const saved = bundle.total - bundle.discounted;
@@ -2720,7 +2733,7 @@ function renderBundleCards() {
                 </div>
             </div>
         `;
-    }
+    });
     container.innerHTML = html;
 }
 
@@ -2848,6 +2861,44 @@ function buyDetailNow() {
     buyFromCart();
 }
 
+// ========== NEW: GET USER LOCATION (silent, no manual fallback) ==========
+function getUserLocation() {
+    const statusEl = document.getElementById('location-status');
+    
+    // Check if page is not secure (HTTP) – show warning
+    if (!window.isSecureContext) {
+        statusEl.innerHTML = '<span style="color:var(--warning);"><i class="fas fa-exclamation-triangle"></i> Page not secure. Location unavailable.</span>';
+        return;
+    }
+    
+    if (!navigator.geolocation) {
+        statusEl.innerHTML = '<span style="color:var(--danger);">Geolocation not supported.</span>';
+        return;
+    }
+    
+    statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const coords = `${position.coords.latitude},${position.coords.longitude}`;
+            document.getElementById('customer-coordinates').value = coords;
+            statusEl.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success);"></i> Location captured!';
+        },
+        (error) => {
+            console.error('Geolocation error:', error);
+            let msg = '';
+            if (error.code === error.PERMISSION_DENIED) {
+                msg = 'Permission denied.';
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+                msg = 'Position unavailable.';
+            } else if (error.code === error.TIMEOUT) {
+                msg = 'Location request timed out.';
+            }
+            statusEl.innerHTML = `<span style="color:var(--danger);">${msg}</span>`;
+        }
+    );
+}
+
 // ========== CHECKOUT (with login check) ==========
 function buyFromCart(index = null) {
     if (!currentUser) {
@@ -2899,6 +2950,7 @@ async function submitOrder() {
     const deliveryNote = document.getElementById('delivery-note').value.trim();
     const address = document.getElementById('customer-address').value.trim();
     const paymentMethod = document.getElementById('payment-method').value;
+    const coordinates = document.getElementById('customer-coordinates').value; // NEW
 
     if (!name || !phone || !email || !district || !address || !paymentMethod) {
         showQuickMessage('Please fill all required fields');
@@ -2925,7 +2977,8 @@ async function submitOrder() {
         paymentMethod,
         promoCode: appliedPromo?.code,
         district,
-        deliveryNote
+        deliveryNote,
+        coordinates        // NEW: include coordinates
     };
 
     // 3. Try to save to Supabase first (order is recorded before WhatsApp)
@@ -2976,6 +3029,7 @@ async function submitOrder() {
             customer_name: name,
             customer_phone: phone,
             customer_address: `${district} - ${address}${deliveryNote ? ' | Note: ' + deliveryNote : ''}`,
+            coordinates: coordinates,        // NEW: store coordinates
             subtotal: originalSubtotal,
             shipping: shipping,
             discount: finalDiscount,
@@ -3012,6 +3066,8 @@ async function submitOrder() {
     document.getElementById('order-confirm-modal').style.display = 'flex';
     document.getElementById('checkout-form').reset();
     appliedPromo = null;
+    document.getElementById('customer-coordinates').value = ''; // clear coordinates
+    document.getElementById('location-status').innerHTML = '';
     updateCheckoutSummary();
 }
 
@@ -3024,7 +3080,12 @@ function sendOrderToWhatsApp(orderData) {
 }
 
 function formatOrderMessage(o) {
-    let msg = `*NEW ORDER IG *\n\n*Order ID:* ${o.orderId}\n*Customer:* ${o.customer.name}\n*Phone:* ${o.customer.phone}\n*Email:* ${o.customer.email}\n*Delivery District:* ${o.district}\n*Address:* ${o.customer.address}\n*Delivery Note:* ${o.deliveryNote || 'None'}\n*Payment Method:* ${o.paymentMethod === 'mobile_money'?'Mobile Money':'Cash on Delivery'}\n*Promo Code:* ${o.promoCode || 'None'}\n\n*Order Items:*\n`;
+    let msg = `*NEW ORDER IG *\n\n*Order ID:* ${o.orderId}\n*Customer:* ${o.customer.name}\n*Phone:* ${o.customer.phone}\n*Email:* ${o.customer.email}\n*Delivery District:* ${o.district}\n*Address:* ${o.customer.address}\n*Delivery Note:* ${o.deliveryNote || 'None'}\n`;
+    // NEW: include coordinates if present
+    if (o.coordinates) {
+        msg += `*Coordinates:* ${o.coordinates}\n`;
+    }
+    msg += `*Payment Method:* ${o.paymentMethod === 'mobile_money'?'Mobile Money':'Cash on Delivery'}\n*Promo Code:* ${o.promoCode || 'None'}\n\n*Order Items:*\n`;
     o.items.forEach((item,i) => { 
         msg += `\n${i+1}. *${item.name}*\n   ${item.brand?'Brand: '+item.brand+', ':''}${item.specs?'Specs: '+item.specs+', ':''}\n   Image: ${item.image}\n   Quantity: ${item.quantity}\n   Price: UGX ${item.price.toLocaleString()} each\n   Total: UGX ${(item.price*item.quantity).toLocaleString()}\n`; 
     });
