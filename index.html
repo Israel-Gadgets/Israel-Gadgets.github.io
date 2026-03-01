@@ -1881,6 +1881,7 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
         <select id="payment-method" onchange="showPaymentDetails()" required>
             <option value="">Select Payment Method</option>
             <option value="mobile_money">Mobile Money</option>
+            <option value="bank_transfer">Bank Transfer</option>
             <option value="cash">Cash on Delivery</option>
         </select>
         <div id="payment-details">
@@ -1900,7 +1901,8 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
     <div id="order-confirm-content">
         <h3 style="color: var(--brand-red);">Congratulations, 🎉 Order Placed Successfully!</h3>
         <p>Your order ID: <strong id="order-id">#IGM123456</strong></p>
-        <p>Your delivery will only be processed after confirming your payment </p>
+        <p id="payment-note"></p> <!-- Dynamic note based on payment method -->
+        <p>Your delivery will only be processed after confirming your payment.</p>
         <p>We'll contact you within one hour to confirm delivery.</p>
         <p>Thank you for shopping with Israel Gadgets Mbarara! 🛍️</p>
         <button onclick="closeOrderConfirm()" class="btn" style="margin-top: 15px;">Continue Shopping</button>
@@ -2064,7 +2066,7 @@ footer{margin:50px 0 20px;text-align:center;color:#666;padding:0 15px}
 <footer>
   <div class="footer-content">
     © 2026  Israel Gadgets Mbarara| 🚚 Delivery are available across Mbarara, Ishaka & Bushenyi
-    <br><small>Your trusted partner for all phone, tablets, power banks, and many accesories </small>
+    <br><small>Your trusted partner for all phone, tablets, power banks, and many accessories </small>
       <h3>We Own The Latest Ones</h3>
   </div>
 </footer>
@@ -2935,8 +2937,13 @@ function showPaymentDetails() {
     const instructionsEl = document.getElementById('payment-instructions');
     if (!method) { detailsEl.style.display = 'none'; return; }
     detailsEl.style.display = 'block';
-    if (method === 'mobile_money') instructionsEl.innerHTML = `<strong>Mobile Money Payment</strong><br>Please send payment to: <strong>MTN: +256 786 544 501 | Airtel: +256 755 712 526</strong><br>Confirm Name:Israel Nkunda<br>Include your order ID as reason.<br><small>We'll confirm your payment within 15 minutes. Note: We shall process your delivery after confirming your payment</small>`;
-    else instructionsEl.innerHTML = `<strong>Cash on Delivery</strong><br>Pay when your order arrives.<br><small>Exact change appreciated.</small>`;
+    if (method === 'mobile_money') {
+        instructionsEl.innerHTML = `<strong>Mobile Money Payment</strong><br>Please send payment to: <strong>MTN: +256 786 544 501 | Airtel: +256 755 712 526</strong><br>Confirm Name: Israel Nkunda<br>Include your order ID as reason.<br><small>We'll confirm your payment within 15 minutes. Note: We shall process your delivery after confirming your payment</small>`;
+    } else if (method === 'bank_transfer') {
+        instructionsEl.innerHTML = `<strong>Bank Transfer</strong><br>Bank: Absa Bank Uganda<br>Account Name: NKONDA ISRAEL<br>Account Number: 6009848523<br>Branch: MBARARA<br><small>Please send the payment receipt via WhatsApp to +256 755 712 526 after making the transfer. Include your order ID as reference.</small>`;
+    } else {
+        instructionsEl.innerHTML = `<strong>Cash on Delivery</strong><br>Pay when your order arrives.<br><small>Exact change appreciated.</small>`;
+    }
 }
 function updateDeliveryFeeByDistrict() { updateCartUI(); updateCheckoutSummary(); }
 
@@ -3049,8 +3056,7 @@ async function submitOrder() {
         console.log('Order saved to Supabase successfully');
     } catch (e) {
         console.error('Supabase order save failed (order will still be sent via WhatsApp):', e);
-        // Optionally show a warning but continue
-        showQuickMessage('Order saved locally, but we had trouble saving to cloud. WhatsApp order will still be sent.');
+        // No quick message displayed (removed as requested)
     }
 
     // 4. Send to WhatsApp (opens new tab/window)
@@ -3062,6 +3068,17 @@ async function submitOrder() {
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartUI();
     document.getElementById('checkout-modal').style.display = 'none';
+    
+    // Update order confirmation with payment-specific message
+    const paymentNote = document.getElementById('payment-note');
+    if (paymentMethod === 'bank_transfer') {
+        paymentNote.innerHTML = 'Please send your payment receipt via WhatsApp to +256 755 712 526 after making the bank transfer.';
+    } else if (paymentMethod === 'mobile_money') {
+        paymentNote.innerHTML = 'Please send the payment confirmation via WhatsApp to +256 755 712 526 after making the transfer.';
+    } else {
+        paymentNote.innerHTML = 'You will pay cash on delivery.';
+    }
+    
     document.getElementById('order-id').textContent = '#' + orderId;
     document.getElementById('order-confirm-modal').style.display = 'flex';
     document.getElementById('checkout-form').reset();
@@ -3085,7 +3102,7 @@ function formatOrderMessage(o) {
     if (o.coordinates) {
         msg += `*Coordinates:* ${o.coordinates}\n`;
     }
-    msg += `*Payment Method:* ${o.paymentMethod === 'mobile_money'?'Mobile Money':'Cash on Delivery'}\n*Promo Code:* ${o.promoCode || 'None'}\n\n*Order Items:*\n`;
+    msg += `*Payment Method:* ${o.paymentMethod === 'mobile_money'?'Mobile Money':(o.paymentMethod === 'bank_transfer'?'Bank Transfer':'Cash on Delivery')}\n*Promo Code:* ${o.promoCode || 'None'}\n\n*Order Items:*\n`;
     o.items.forEach((item,i) => { 
         msg += `\n${i+1}. *${item.name}*\n   ${item.brand?'Brand: '+item.brand+', ':''}${item.specs?'Specs: '+item.specs+', ':''}\n   Image: ${item.image}\n   Quantity: ${item.quantity}\n   Price: UGX ${item.price.toLocaleString()} each\n   Total: UGX ${(item.price*item.quantity).toLocaleString()}\n`; 
     });
